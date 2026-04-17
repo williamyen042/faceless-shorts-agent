@@ -1,0 +1,77 @@
+{
+  "name": "shorts_mvp",
+  "description": "Generate a basic faceless YouTube Shorts package from a niche prompt.",
+  "inputs": {
+    "niche": "The content niche or topic.",
+    "tone": "The comedic or narration style.",
+    "target_length_seconds": "Desired video length."
+  },
+  "outputs": [
+    "ideas.json",
+    "selected_idea.json",
+    "script.json",
+    "captions.srt",
+    "visual_plan.json",
+    "voiceover.mp3"
+  ],
+  "agents": [
+    {
+      "id": "idea_generator",
+      "prompt": "prompts/idea_generator.md",
+      "task": "Create 5-10 faceless Shorts ideas for the niche.",
+      "input_from": ["workflow.inputs"],
+      "writes": "ideas.json"
+    },
+    {
+      "id": "idea_scorer",
+      "prompt": "prompts/idea_scorer.md",
+      "task": "Rank the ideas and select the strongest one for the MVP.",
+      "input_from": ["ideas.json", "workflow.inputs"],
+      "writes": "selected_idea.json"
+    },
+    {
+      "id": "script_writer",
+      "prompt": "prompts/script_writer.md",
+      "task": "Write a short, funny narration script from the selected idea.",
+      "input_from": ["selected_idea.json", "workflow.inputs"],
+      "writes": "script_draft.json"
+    },
+    {
+      "id": "script_editor",
+      "prompt": "prompts/script_editor.md",
+      "task": "Tighten the hook, pacing, and ending of the draft script.",
+      "input_from": ["script_draft.json", "selected_idea.json", "workflow.inputs"],
+      "writes": "script.json"
+    },
+    {
+      "id": "caption_builder",
+      "prompt": "prompts/caption_builder.md",
+      "task": "Convert the final script into simple SRT captions.",
+      "input_from": ["script.json"],
+      "writes": "captions.srt"
+    },
+    {
+      "id": "visual_planner",
+      "prompt": "prompts/visual_planner.md",
+      "task": "Turn the final script into scene beats and asset ideas.",
+      "input_from": ["script.json", "captions.srt", "workflow.inputs"],
+      "writes": "visual_plan.json"
+    },
+    {
+      "id": "tts_generator",
+      "prompt": "prompts/tts_generator.md",
+      "task": "Optionally generate an ElevenLabs voiceover from the final script.",
+      "input_from": ["script.json", ".env"],
+      "writes": "voiceover.mp3"
+    }
+  ],
+  "human_approval": {
+    "required_before": ["upload", "scheduling"],
+    "check": [
+      "The script is not copied from another creator.",
+      "The voiceover sounds clear.",
+      "The visuals avoid copyrighted characters and celebrity likenesses.",
+      "The topic does not make unsupported medical, legal, or financial claims."
+    ]
+  }
+}

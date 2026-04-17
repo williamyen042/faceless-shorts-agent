@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import re
 
 
 @dataclass(frozen=True)
@@ -96,16 +97,31 @@ def write_script(idea: ShortIdea, tone: str, length_seconds: int) -> dict:
     }
 
 
-def make_captions(script: str, seconds_per_caption: int = 3) -> str:
-    words = script.split()
-    chunks = [" ".join(words[index : index + 8]) for index in range(0, len(words), 8)]
+def format_srt_time(seconds: float) -> str:
+    milliseconds_total = round(seconds * 1000)
+    hours = milliseconds_total // 3_600_000
+    milliseconds_total %= 3_600_000
+    minutes = milliseconds_total // 60_000
+    milliseconds_total %= 60_000
+    whole_seconds = milliseconds_total // 1000
+    milliseconds = milliseconds_total % 1000
+    return f"{hours:02d}:{minutes:02d}:{whole_seconds:02d},{milliseconds:03d}"
+
+
+def make_captions(script: str, target_length_seconds: int) -> str:
+    words = re.findall(r"\S+", script)
+    if not words:
+        return ""
+
+    # Estimate word timing deterministically until real TTS word timestamps are available.
+    word_duration = max(0.18, target_length_seconds / len(words))
     lines = []
-    for index, chunk in enumerate(chunks, start=1):
-        start = (index - 1) * seconds_per_caption
-        end = index * seconds_per_caption
+    for index, word in enumerate(words, start=1):
+        start = (index - 1) * word_duration
+        end = index * word_duration
         lines.append(str(index))
-        lines.append(f"00:00:{start:02d},000 --> 00:00:{end:02d},000")
-        lines.append(chunk)
+        lines.append(f"{format_srt_time(start)} --> {format_srt_time(end)}")
+        lines.append(word)
         lines.append("")
     return "\n".join(lines)
 

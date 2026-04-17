@@ -47,6 +47,23 @@ pNInz6obpgDQGcFmaJgB
 ## Next steps
 
 - Replace the starter idea/script logic with OpenAI API calls.
+- Upgrade word-by-word captions to use real TTS or transcription word timestamps instead of estimated timing.
 - Add trend research from selected sources.
 - Add video assembly with FFmpeg, MoviePy, or Remotion.
 - Add a human approval step before posting.
+
+## Workflow
+
+The starter workflow lives at `workflows/shorts_mvp.json`.
+
+It defines which agent owns each step:
+
+1. `idea_generator` creates video ideas.
+2. `idea_scorer` picks the strongest idea.
+3. `script_writer` drafts the narration.
+4. `script_editor` tightens the script.
+5. `caption_builder` creates captions.
+6. `visual_planner` creates scene beats and asset ideas.
+7. `tts_generator` optionally creates the voiceover.
+
+Each agent has a matching prompt in `prompts/` when it needs model instructions.

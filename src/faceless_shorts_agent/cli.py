@@ -41,7 +41,7 @@ def run_pipeline(args: argparse.Namespace) -> Path:
     ideas = generate_ideas(args.niche, args.tone)
     selected_idea = select_best_idea(ideas)
     script = write_script(selected_idea, args.tone, args.length)
-    captions = make_captions(script["script"])
+    captions = make_captions(script["script"], args.length)
     visual_plan = make_visual_plan(script["script"])
 
     write_json(run_dir / "ideas.json", [asdict(idea) | {"score": idea.score} for idea in ideas])
